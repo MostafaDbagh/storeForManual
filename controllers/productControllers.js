@@ -1,52 +1,89 @@
+
 const productSchema = require('../schema/productSchema')
-const path = require('path')
+const {uploadFile,downloadFile} = require('../s3')
+const bucketName = process.env.AWS_BUCKET_NAME;
+const region = process.env.AWS_BUCKET_REGION;
+const accessKeyId = process.env.AWS_ACCESS_KEY;
+const secretAccessKey= process.env.AWS_SECRET_KEY;const fs =require('fs')
 
+const AWS = require('aws-sdk');
 
+const s3 = new AWS.S3({
+    region,
+    accessKeyId,
+    secretAccessKey  
+});
 
-const addProduct = async (req, res) => {
-    const body = req.body;
-    const filePath = req.file.path;
+const  addImageIntoS3= async (file) =>{
+    const fileStream = fs.createReadStream(file.path);
+    const uploadParams ={
+       Bucket: bucketName,
+       Body:  fileStream,
+       Key:file.filename ,
+    }
+    return s3.upload(uploadParams).promise()
     
-    if (!body) {
+}
+
+const addProduct = async (req, res,next) => {
+    const body = req.body;
+    const file = req.file;
+
+    if (!body || !file) {
         return res.status(400).json({
             success: false,
             error: 'No message was sent',
         })
     }
 
-    const product = new productSchema({...body,product_image:filePath})
-
+    const resultUploadIntoS3 = await addImageIntoS3(file);
+    const product = new productSchema({...body,product_image:resultUploadIntoS3.key})
+    console.log(product,'product')
     if (!product) {
         return res.status(400).json({ success: false, error: err })
     }
-
    await product
         .save()
         .then(() => {
             return res.status(201).json({
                 success: true,
-                id: product._id,
+                id:product.product_id,
+                imageUrl:product.product_image
+            
             })
         })
 }
 
-const getProducts = async (req, res) => {
-await productSchema.find({}).then(data => {
-        res.status(200).json({
-            data,
-            message: 'data fetch successfully'
-        })
-    }).catch(err => {
-        res.status(404).json({
-            err,
-            message: 'data not found'
-        })
-    });
-
+const addImage = async(req,res)=>{
+    const file = req.file;
+    const result = await uploadFile(file);
+      res.send(result?.key) 
 }
+
+const getImage = (req,res) =>{
+    const key = req.params.key;
+    const  readStream = downloadFile(key);
+    readStream.pipe(res)
+}
+
+const getProducts = async (req, res) => {
+    try{
+        const products = await productSchema.find({});
+        const productsWithUrls = products.map(product => {
+          const imageUrl = `http://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${product.product_image}`;
+          return { ...product._doc, imageUrl }; 
+        });
+        res.json({data:productsWithUrls});
+
+    } catch(err){
+        console.error(err);
+        res.status(500).json({ error: 'Failed to retrieve products' });
+      }
+}
+
 const getProductById = async (req, res) => {
     const { id } = req.params;
-    await productSchema.findOne({ _id: id }).then(data => {
+    await productSchema.find({product_id:id }).then(data => {
         res.status(200).json({
             data,
             message: 'productId fetch successfully'
@@ -63,7 +100,7 @@ const getProductById = async (req, res) => {
 const deleteProduct = async (req, res) => {
     const { id } = req.params;
 
-    productSchema.findByIdAndDelete(id,  (err, data)=> {
+    productSchema.findOneAndDelete({product_id:id},  (err, data)=> {
         if (err || !data) {
             res.status(404).json({
                 err,
@@ -90,13 +127,13 @@ const updateProduct = async (req, res) => {
             error: 'You must provide a body to update',
         })
     }
-   await productSchema.findOne({ _id: id })
+   await productSchema.findOne({ product_id: id })
+ 
    .then(product =>{
-          product.product_name = body.product_name ;
-        product.product_price = body.product_price;
+        product.product_name = body.product_name  ;
+        product.product_price = body.product_price ;
         product.product_type= body.product_type;
-               product
-            .save()
+           product.save()
             .then(() => {
                 return res.status(200).json({
                     success: true,
@@ -121,5 +158,7 @@ module.exports = {
     getProducts,
     getProductById,
     deleteProduct,
-    updateProduct
+    updateProduct,
+    addImage,
+    getImage
 }

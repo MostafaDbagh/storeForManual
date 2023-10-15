@@ -7,6 +7,8 @@ const db =require('./db/connect')
 const app = express();
 
 const productApi = require('./api/routes/product')
+const locationApi = require('./api/routes/locations')
+
 const orderApi = require('./api/routes/orders');
 
 app.use(morgan('dev'));
@@ -18,6 +20,7 @@ app.use(express.json());
 
 app.use('/products',productApi);
 app.use('/orders',orderApi);
+app.use("/location",locationApi)
 
 app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
 app.use((req,res,next)=>{

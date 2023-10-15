@@ -1,29 +1,7 @@
 const routes = require('express').Router();
+const orderController = require("../../controllers/orderController");
 
-routes.get('/',(req,res)=>{
-    res.status(200).json({
-        message:'we are handling the get order request'
-    })
-})
+routes.get('/',orderController.getOrders)
+routes.post('/makeOrder',orderController.makeOrder)
 
-routes.post('/',(req,res)=>{
-    const orderObj= {
-        name:req.body.name,
-        quantity:req.body.quantity
-    }
-    res.status(200).json({
-        message:'we are handling the post order request',
-        order:orderObj
-    })
-})
-routes.get('/:orderId',(req,res)=>{
-    res.status(200).json({
-        message:'we are handling order Details'
-    })
-})
-routes.delete('/:orderId',(req,res)=>{
-    res.status(200).json({
-        message:'we are handling order Details deleted'
-    })
-})
 module.exports = routes
