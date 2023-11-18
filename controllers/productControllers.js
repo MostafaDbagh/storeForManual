@@ -1,12 +1,14 @@
 
 const productSchema = require('../schema/productSchema')
 const {uploadFile,downloadFile} = require('../s3')
+
 const bucketName = process.env.AWS_BUCKET_NAME;
 const region = process.env.AWS_BUCKET_REGION;
 const accessKeyId = process.env.AWS_ACCESS_KEY;
-const secretAccessKey= process.env.AWS_SECRET_KEY;const fs =require('fs')
-
+const secretAccessKey= process.env.AWS_SECRET_KEY;
+const fs =require('fs')
 const AWS = require('aws-sdk');
+
 
 const s3 = new AWS.S3({
     region,
@@ -15,12 +17,12 @@ const s3 = new AWS.S3({
 });
 
 const  addImageIntoS3= async (file) =>{
-    const fileStream = fs.createReadStream(file.path);
     const uploadParams ={
        Bucket: bucketName,
-       Body:  fileStream,
-       Key:file.filename ,
+       Body:  file.buffer,
+       Key:file.fieldname ,
     }
+    console.log(uploadParams,'upload params')
     return s3.upload(uploadParams).promise()
     
 }
@@ -38,7 +40,6 @@ const addProduct = async (req, res,next) => {
 
     const resultUploadIntoS3 = await addImageIntoS3(file);
     const product = new productSchema({...body,product_image:resultUploadIntoS3.key})
-    console.log(product,'product')
     if (!product) {
         return res.status(400).json({ success: false, error: err })
     }
@@ -153,6 +154,16 @@ const updateProduct = async (req, res) => {
      
 }
 
+const FilterProduct = async (req, res) => {
+    const {searchQuery} = req.params;
+    try {
+        const searchResult = await productSchema.find({product_name:  new RegExp(searchQuery, 'i') })
+        res.json({ results: searchResult,message:'data fetched successfully',count:searchResult.length });
+      } catch (err) {
+        res.status(500).json({ error: err.message ,message:'error fetch'});
+      } 
+}
+
 module.exports = {
     addProduct,
     getProducts,
@@ -160,5 +171,6 @@ module.exports = {
     deleteProduct,
     updateProduct,
     addImage,
-    getImage
+    getImage,
+    FilterProduct
 }

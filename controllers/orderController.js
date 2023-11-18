@@ -52,7 +52,15 @@ const makeOrder =  async(req,res) =>{
 
 
 
-
+    const FilterOrder= async (req, res) => {
+        const {searchQuery} = req.params;
+        try {
+            const searchResult = await orderSchema.find({product_name:  new RegExp(searchQuery, 'i') })
+            res.json({ results: searchResult,message:'data fetched successfully',count:searchResult.length });
+          } catch (err) {
+            res.status(500).json({ error: err.message ,message:'error fetch'});
+          } 
+    }
 
 
 
