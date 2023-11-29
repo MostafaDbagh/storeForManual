@@ -85,8 +85,9 @@ const getProducts = async (req, res) => {
 const getProductById = async (req, res) => {
     const { id } = req.params;
     await productSchema.find({product_id:id }).then(data => {
+        console.log(data)
         res.status(200).json({
-            data,
+            data:data[0],
             message: 'productId fetch successfully'
         })
     }).catch(err => {
