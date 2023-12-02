@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
-product_category:{ type: Number, required: true },
   product_id: { type: Number, required: true },
   product_admin: { type: String, required: true },
   product_name: { type: String, required: true },
@@ -12,7 +11,9 @@ product_category:{ type: Number, required: true },
   product_Size: { type: Array, required: false },
   product_Color: { type: Array, required: false },
   product_description:{type:String,required:true},
-  product_seen:{type:Number,required:true}
+  product_seen:{type:String,required:true},
+  product_category:{ type: String, required: true }
+
 });
 
 module.exports = mongoose.model("products", UserSchema);

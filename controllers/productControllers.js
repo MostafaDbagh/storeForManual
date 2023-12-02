@@ -155,11 +155,23 @@ const updateProduct = async (req, res) => {
      
 }
 
+const getMostRelatedProducts = async(req,res)=>{
+    const {type} = req.params;
+    console.log('type' ,type)
+    try{
+        const mostRelatedProdusts = await productSchema.find({product_category:type})
+        console.log(mostRelatedProdusts,'most Related product')
+        res.status(200).json({data:mostRelatedProdusts,message:'data fetched successfully',count:mostRelatedProdusts.length})
+    }catch(err){
+        res.status(500).json({ error: err.message ,message:'error fetch'});
+    }
+}
+
 const FilterProduct = async (req, res) => {
     const {searchQuery} = req.params;
     try {
         const searchResult = await productSchema.find({product_name:  new RegExp(searchQuery, 'i') })
-        res.json({ results: searchResult,message:'data fetched successfully',count:searchResult.length });
+        res.json({ data: searchResult,message:'data fetched successfully',count:searchResult.length });
       } catch (err) {
         res.status(500).json({ error: err.message ,message:'error fetch'});
       } 
@@ -173,5 +185,6 @@ module.exports = {
     updateProduct,
     addImage,
     getImage,
-    FilterProduct
+    FilterProduct,
+    getMostRelatedProducts
 }
