@@ -8,6 +8,7 @@ const OrderSchema = new mongoose.Schema(
        order_totalAmount:{type:Number,required:true},
        order_status:{type:String,required:true},
        order_isCompleted:{type:Boolean,required:true},
+       order_paidAmount:{type:String,required:true}
      
     }
 )

@@ -6,22 +6,26 @@ const db =require('./db/connect')
 
 const app = express();
 
-const productApi = require('./api/routes/product')
-const locationApi = require('./api/routes/locations')
-const contactSupportApi = require('./api/routes/contact')
-const orderApi = require('./api/routes/orders');
-
+app.use(express.urlencoded({extended:true}));
+app.use(express.json());
 app.use(morgan('dev'));
 app.use(cors())
 
-app.use(express.urlencoded({extended:false}));
-app.use(express.json());
+const locationApi = require('./api/routes/locations')
+const contactSupportApi = require('./api/routes/contact')
+const productApi = require('./api/routes/product')
+const orderApi = require('./api/routes/orders');
+
+
+
+
 
 
 app.use('/products',productApi);
 app.use('/orders',orderApi);
 app.use("/location",locationApi)
 app.use("/",contactSupportApi)
+
 
 app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
 app.use((req,res,next)=>{

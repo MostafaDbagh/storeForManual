@@ -7,7 +7,7 @@ const path = require('path')
 const postLocation = async (req,res) =>{
 
         const body = req.body;
-        
+         console.log(body)
         if (!body) {
             return res.status(400).json({
                 success: false,
@@ -30,10 +30,31 @@ const postLocation = async (req,res) =>{
                 })
             })
     }
+
+    const getLocation = async (req,res) =>{
+
+     await LocationSchema.find({})
+     .then(data =>{
+            res.status(200)
+            .json({data,message:'data fetched successfully'})
+        }).catch(err =>{
+            res.status(500).json({err,message:'data not found'})
+        })
+
+    
+       
+    
+ 
+    
+    
+    }
+
+
     
 
 
 
 module.exports={
-    postLocation
+    postLocation,
+    getLocation
 }

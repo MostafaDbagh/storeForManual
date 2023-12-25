@@ -30,7 +30,6 @@ const  addImageIntoS3= async (file) =>{
 const addProduct = async (req, res,next) => {
     const body = req.body;
     const file = req.file;
-
     if (!body || !file) {
         return res.status(400).json({
             success: false,
@@ -121,20 +120,30 @@ const deleteProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     const body = req.body
-    const {id} = req.params;
-
+    const {id} = req.params
+console.log(req.body,'reqqqqq')
     if (!body) {
         return res.status(400).json({
             success: false,
             error: 'You must provide a body to update',
         })
     }
+    console.log(body,'body')
    await productSchema.findOne({ product_id: id })
  
    .then(product =>{
         product.product_name = body.product_name  ;
         product.product_price = body.product_price ;
         product.product_type= body.product_type;
+        product.product_admin= body.product_admin;
+        product.product_old_price= body.product_old_price;
+        product.product_category= body.product_category;
+        product.product_description= body.product_description;
+        product.product_seen= body.product_seen;
+        product.product_quantity= body.product_quantity;
+     product.product_Color= body.product_Color ?? product.product_Color ;
+        product.product_Size= body.product_Size ??product.product_Size;
+        product.product_stock= body.product_stock??product.product_stock;
            product.save()
             .then(() => {
                 return res.status(200).json({
